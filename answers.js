@@ -1,1 +1,10 @@
-db.restaurants.find({name:"Caffe Dante"},{restaurent_id:1});
+cursor_r_1=db.restaurants.find({"name":"Caffe Dante"}, {"_id":0,"restaurant_id":1});
+cursor_r_2=db.restaurants.find({name:/.*Steak.*/},{"name":1,"_id":0,"restaurant_id":1});
+cursor_r_3=db.restaurants.find({$and:[{$or:[{cuisine:"Italian"},{cuisine:"American"}]},{borough:"Brooklyn"}]},{name:1});
+cursor_r_4=db.restaurants.aggregate([{$match:{cuisine:/.*American.*/}},{$group:{_id:"$borough",count:{$sum:1}}},{$sort:{count:-1}}]);
+cursor_r_5=db.restaurants.aggregate([{$match:{$and:[{cuisine:/.*Chinese.*/},{borough:"Manhattan"}]}},{$unwind:{path:"$grades",preserveNullAndEmptyArrays:true}},{$group:{_id:"$restaurant_id",name:{$first:"$name"},score:{$sum:"$grades.score"}}},{$sort:{score:-1}},{$project:{_id:0,name:1,score:1}},{$limit:5}]);
+cursor_r_6=db.restaurants.find({$and:[ {"address.coord": {$geoWithin: {$box:[[-73,40.5],[-74,40.7]]}}},{"grades.score":{$gt:70}}]},{_id:0,grades:1,name:1});
+cursor_z_1=db.zips.aggregate([{$sort:{pop:-1}},{$limit:10},{$project:{_id:1,city:1,state:1}}]);
+cursor_z_2=db.zips.aggregate([{$group: { _id: { state:"$state",city:"$city"}, pop: {$sum: "$pop"}}},{$sort:{pop:-1}},{$group:{_id:"$_id.state", city: {$first:"$_id.city"}}}]);
+cursor_z_3=db.zips.aggregate([{$group: { _id: { state:"$state",city:"$city"}, pop: {$sum: "$pop"}}},{$group:{_id:"$_id.state",avgPop: {$avg:"$pop"}}},{$match:{avgPop:{$gt: 10000}}}]);
+cursor_z_4=db.zips.find({loc:{$near:[ -70, 40]}}, {"_id":0,city:1}).limit(5);
